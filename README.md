@@ -1,4 +1,6 @@
 ### Step 1: Download pretrained StyleGAN2 model 
+```mkdir downloads```\
+
 ```wget -P downloads https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl```
 
 ### Step 2: Pull repo
