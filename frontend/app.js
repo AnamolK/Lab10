@@ -6,6 +6,54 @@ let idA = null
 let idB = null
 const historyA = []
 const historyB = []
+const history = [] // each entry: { z_id, img_b64 }
+
+function appendHistory(z_id, img_b64) {
+  history.push({ z_id, img_b64 })
+  if (history.length > 10) history.splice(0, history.length - 10)
+  renderHistoryStrip()
+}
+
+function renderHistoryStrip() {
+  const container = el('historyThumbs')
+  if (!container) return
+  container.innerHTML = ''
+  history.forEach((entry, i) => {
+    const wrap = document.createElement('div')
+    wrap.className = 'history-thumb'
+
+    const img = document.createElement('img')
+    img.src = entry.img_b64
+    img.alt = `history ${i + 1}`
+
+    const actions = document.createElement('div')
+    actions.className = 'history-thumb-actions'
+
+    const btnA = document.createElement('button')
+    btnA.textContent = '→ A'
+    btnA.addEventListener('click', () => {
+      idA = entry.z_id
+      el('imgA').src = entry.img_b64
+      clearFilmstrip()
+      updateButtons()
+    })
+
+    const btnB = document.createElement('button')
+    btnB.textContent = '→ B'
+    btnB.addEventListener('click', () => {
+      idB = entry.z_id
+      el('imgB').src = entry.img_b64
+      clearFilmstrip()
+      updateButtons()
+    })
+
+    actions.appendChild(btnA)
+    actions.appendChild(btnB)
+    wrap.appendChild(img)
+    wrap.appendChild(actions)
+    container.appendChild(wrap)
+  })
+}
 
 async function postJSON(path, body) {
   const res = await fetch(API_BASE + path, {
@@ -30,12 +78,14 @@ async function generate(target) {
       idA = data.latent_id
       el('imgA').src = data.image
       historyA.push({ id: idA, image: data.image })
+      appendHistory(idA, data.image)
       // enable undo if we have previous entries
       if (historyA.length > 1) el('undoA').disabled = false
     } else {
       idB = data.latent_id
       el('imgB').src = data.image
       historyB.push({ id: idB, image: data.image })
+      appendHistory(idB, data.image)
       if (historyB.length > 1) el('undoB').disabled = false
     }
     updateButtons();
